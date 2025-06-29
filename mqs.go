@@ -459,12 +459,12 @@ func (app *App) getTopics(w http.ResponseWriter, r *http.Request) {
 		CreatedAt time.Time `json:"createdAt"`
 	}
 	const query = `
-SELECT json_agg (
+SELECT COALESCE(json_agg (
 	json_build_object(
 		'slug', t.slug,
 		'createdAt', t.created_at
 	)
-)
+), '[]'::json)
 FROM (
   SELECT *
   FROM topics
