@@ -1075,7 +1075,11 @@ func (app *App) sendToWebhook(ctx context.Context, td TopicData) ([]int64, error
 		if err != nil {
 			return nil, fmt.Errorf("failed to send request to webhook %s: %w", webhook.URL, err)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				slog.Error("failed to close response body", "error", err, "webhook", webhook.URL)
+			}
+		}()
 
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			return nil, fmt.Errorf("webhook %s returned non-2xx status code: %d", webhook.URL, resp.StatusCode)
